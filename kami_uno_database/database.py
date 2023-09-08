@@ -13,26 +13,19 @@ from sqlalchemy import create_engine
 from sqlalchemy.engine import URL, Engine
 from sqlalchemy.exc import SQLAlchemyError
 
-from .constant import (
+from .constants import (
     BILLINGS_DATETIME_COLS,
     BOARD_BILLINGS_NUM_COLS,
     CUSTOMER_DETAILS_DATETIME_COLS,
     CUSTOMER_DETAILS_NUM_COLS,
     FUTURE_BILLS_DATETIME_COLS,
-    FUTURE_BILLS_NUM_COLS,
-    ORDER_ITEM_DATE_COLS,
+    FUTURE_BILLS_NUM_COLS,    
     SALES_BILLINGS_NUM_COLS,
 )
 
 db_connector_logger = logging.getLogger('database')
 load_dotenv()
-connection_url = URL.create(
-    'mysql+pymysql',
-    username=getenv('DB_USER'),
-    password=getenv('DB_USER_PASSWORD'),
-    host=getenv('DB_HOST'),
-    database='db_uc_kami',
-)
+
 
 
 @benchmark_with(db_connector_logger)
@@ -40,6 +33,13 @@ connection_url = URL.create(
 def create_and_connect_engine() -> Engine | None:
     sql_engine = None
     try:
+        connection_url = URL.create(
+            'mysql+pymysql',
+            username=getenv('DB_USER'),
+            password=getenv('DB_USER_PASSWORD'),
+            host=getenv('DB_HOST'),
+            database='db_uc_kami',
+        )
         sql_engine = create_engine(connection_url, pool_recycle=3600)
         sql_engine.connect()
     except SQLAlchemyError as e:

@@ -41,7 +41,7 @@ CUSTOMER_DETAILS_NUM_COLS = {
     'qtd_total_compras': np.int64,
     'qtd_compras_semestre': np.int64,
     'total_compras_semestre': np.float64,
-    'total_compras_trimestr': np.float64,
+    'total_compras_trimestre': np.float64,
     'total_compras_bimestre': np.float64,
 }
 FUTURE_BILLS_DATETIME_COLS = ['dt_vencimento']
