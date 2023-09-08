@@ -162,3 +162,4 @@ cython_debug/
 #data out
 kami_uno_database/out
 kami_uno_database/in/views/gb_views
+kami_uno_database/logs/

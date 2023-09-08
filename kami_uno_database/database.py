@@ -7,7 +7,7 @@ import numpy as np
 import pandas as pd
 from dotenv import load_dotenv
 from kami_logging import benchmark_with, logging_with
-from constant import (
+from .constant import (
     BILLINGS_DATETIME_COLS,
     BOARD_BILLINGS_NUM_COLS,
     CUSTOMER_DETAILS_DATETIME_COLS,

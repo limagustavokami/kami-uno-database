@@ -1,9 +1,20 @@
 [tool.poetry]
 name = "kami-uno-database"
-version = "0.1.0"
+version = "0.1.1"
 description = "Python Connection For Kami database instance from UNO"
 authors = ["Maicon de Menezes <maicon@kamico.com.br>"]
 readme = "README.md"
+packages = [{include = "kami_uno_database"}]
+classifiers = [  
+  "Topic :: Database",
+  "Programming Language :: Python :: 3.10",      
+  "Natural Language :: English",
+  "Development Status :: 4 - Beta",
+]
+
+[tool.poetry.urls]
+"Source" = "https://github.com/devkami/kami-uno-database"
+"Bug Tracker" = "https://github.com/devkami/kami-uno-database/issues"
 
 [tool.poetry.dependencies]
 python = "^3.10"
@@ -12,6 +23,7 @@ python-dotenv = "^1.0.0"
 kami-logging = "^0.2.1"
 pandas = "^2.1.0"
 kami-filemanager = "^0.1.0"
+pymysql = "^1.1.0"
 
 [tool.poetry.group.dev.dependencies]
 pytest = "^7.3.1"
