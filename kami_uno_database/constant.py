@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 import numpy as np
+
 BILLINGS_DATETIME_COLS = [
     'dt_implante_pedido',
     'dt_entrega_comprometida',
@@ -10,7 +11,7 @@ BOARD_BILLINGS_NUM_COLS = {
     'mes': np.int64,
     'cod_empresa_pedido': np.int64,
     'cod_pedido': np.int64,
-    'cod_cliente': np.int64,    
+    'cod_cliente': np.int64,
     'situacao_pedido': np.int64,
     'cod_colaborador': np.int64,
     'qtd': np.int64,
@@ -63,10 +64,10 @@ SALES_BILLINGS_NUM_COLS = {
     'ano': np.int64,
     'mes': np.int64,
     'empresa_pedido': np.int64,
-    'empresa_nota_fiscal': np.int64,    
+    'empresa_nota_fiscal': np.int64,
     'cod_cliente': np.int64,
     'cod_colaborador': np.int64,
-    'cod_pedido': np.int64,    
+    'cod_pedido': np.int64,
     'cod_situacao': np.int64,
     'cod_grupo_produto': np.int64,
     'cod_grupo_pai': np.int64,
