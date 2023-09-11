@@ -1,13 +1,13 @@
 [tool.poetry]
 name = "kami-uno-database"
-version = "0.1.2"
+version = "0.1.4"
 description = "Python Connection For Kami database instance from UNO"
 authors = ["Maicon de Menezes <maicon@kamico.com.br>"]
 readme = "README.md"
 packages = [{include = "kami_uno_database"}]
 classifiers = [  
   "Topic :: Database",
-  "Programming Language :: Python :: 3.10",      
+  "Programming Language :: Python :: 3",      
   "Natural Language :: English",
   "Development Status :: 4 - Beta",
 ]

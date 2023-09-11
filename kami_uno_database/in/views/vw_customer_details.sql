@@ -106,10 +106,10 @@ LEFT JOIN `cd_cliente_atividade` AS `cliente_atividade`
   ON (`cliente_atividade`.`cod_cliente` = `cliente`.`cod_cliente`))
 LEFT JOIN `cd_ramo_atividade` AS `ramo_atividade`
   ON (`cliente_atividade`.`cod_ramo_atividade` = `ramo_atividade`.`cod_ramo_atividade`))
-LEFT JOIN `vd_nota_fiscal` AS `nota_fiscal` 
+INNER JOIN `vd_nota_fiscal` AS `nota_fiscal` 
   ON (`nota_fiscal`.`cod_cliente` = `cliente`.`cod_cliente`))
-LEFT JOIN `fn_titulo_receber` AS `recebe`
-  ON (`recebe`.`cod_cliente` = `cliente`.`cod_cliente`)
+INNER JOIN `fn_titulo_receber` AS `recebe`
+  ON (`recebe`.`cod_cliente` = `nota_fiscal`.`cod_cliente`)
 )
 WHERE (`nota_fiscal`.`situacao` < 86)
 AND (`nota_fiscal`.`situacao` > 79)

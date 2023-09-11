@@ -6,7 +6,7 @@ from typing import Dict, List
 
 import numpy as np
 import pandas as pd
-from constants import (
+from kami_uno_database.constants import (
     BILLINGS_DATETIME_COLS,
     BOARD_BILLINGS_NUM_COLS,
     CUSTOMER_DETAILS_DATETIME_COLS,
