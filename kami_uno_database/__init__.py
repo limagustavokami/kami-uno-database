@@ -13,8 +13,8 @@ from .database import (
     get_qy_sales_teams,
     get_vw_board_billings,
     get_vw_customer_details,
-    get_vw_sales_lines,
     get_vw_future_bills,
+    get_vw_sales_lines,
     update_database_views,
 )
 
@@ -28,7 +28,7 @@ __all__ = [
     'get_dataframe_from_sql_file',
     'get_dataframe_from_sql',
     'get_dataframe_from_sql_table',
-    'get_vw_board_billings',    
+    'get_vw_board_billings',
     'get_vw_sales_lines',
     'get_vw_customer_details',
     'get_vw_future_bills',

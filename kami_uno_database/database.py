@@ -6,6 +6,15 @@ from typing import Dict, List
 
 import numpy as np
 import pandas as pd
+from constants import (
+    BILLINGS_DATETIME_COLS,
+    BOARD_BILLINGS_NUM_COLS,
+    CUSTOMER_DETAILS_DATETIME_COLS,
+    CUSTOMER_DETAILS_NUM_COLS,
+    FUTURE_BILLS_DATETIME_COLS,
+    FUTURE_BILLS_NUM_COLS,
+    SALES_LINES_NUM_COLS,
+)
 from dotenv import load_dotenv
 from kami_filemanager import get_file_list_from
 from kami_logging import benchmark_with, logging_with
@@ -13,19 +22,8 @@ from sqlalchemy import create_engine
 from sqlalchemy.engine import URL, Engine
 from sqlalchemy.exc import SQLAlchemyError
 
-from constants import (
-    BILLINGS_DATETIME_COLS,
-    BOARD_BILLINGS_NUM_COLS,
-    CUSTOMER_DETAILS_DATETIME_COLS,
-    CUSTOMER_DETAILS_NUM_COLS,
-    FUTURE_BILLS_DATETIME_COLS,
-    FUTURE_BILLS_NUM_COLS,    
-    SALES_LINES_NUM_COLS,
-)
-
 db_connector_logger = logging.getLogger('database')
 load_dotenv()
-
 
 
 @benchmark_with(db_connector_logger)
