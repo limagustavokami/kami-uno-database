@@ -13,14 +13,14 @@ from sqlalchemy import create_engine
 from sqlalchemy.engine import URL, Engine
 from sqlalchemy.exc import SQLAlchemyError
 
-from .constants import (
+from constants import (
     BILLINGS_DATETIME_COLS,
     BOARD_BILLINGS_NUM_COLS,
     CUSTOMER_DETAILS_DATETIME_COLS,
     CUSTOMER_DETAILS_NUM_COLS,
     FUTURE_BILLS_DATETIME_COLS,
     FUTURE_BILLS_NUM_COLS,    
-    SALES_BILLINGS_NUM_COLS,
+    SALES_LINES_NUM_COLS,
 )
 
 db_connector_logger = logging.getLogger('database')
@@ -196,13 +196,13 @@ def get_vw_board_billings() -> pd.DataFrame:
 
 @benchmark_with(db_connector_logger)
 @logging_with(db_connector_logger)
-def get_vw_daily_billings() -> pd.DataFrame:
+def get_vw_sales_lines() -> pd.DataFrame:
     df = pd.DataFrame()
     try:
         df = get_dataframe_from_sql_query(
-            sql_script='SELECT * FROM vw_sales_billings',
+            sql_script='SELECT * FROM vw_sales_lines',
             date_cols=BILLINGS_DATETIME_COLS,
-            cols_types=SALES_BILLINGS_NUM_COLS,
+            cols_types=SALES_LINES_NUM_COLS,
         )
     except Exception as e:
         db_connector_logger.exception('An unknow error occurred:', e)

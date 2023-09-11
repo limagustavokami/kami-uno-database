@@ -1,7 +1,7 @@
--- db_uc_kami.vw_daily_billings source
+-- db_uc_kami.vw_sales_lines source
 USE db_uc_kami;
 CREATE OR REPLACE
-ALGORITHM = UNDEFINED VIEW `vw_daily_billings` AS
+ALGORITHM = UNDEFINED VIEW `vw_sales_lines` AS
 SELECT  
   IFNULL(CAST(YEAR(`pedido`.`dt_implant`) AS CHAR charset utf8mb4),'0') AS `ano`,
   IFNULL(CAST(MONTH(`pedido`.`dt_implant`) AS CHAR charset utf8mb4),'0') AS `mes`,
@@ -46,7 +46,7 @@ SELECT
     ) AS DECIMAL(10, 2)), 0.0)
   AS `custo_kami`,
   IFNULL(CAST(`pedido_item`.`tb_preco` AS CHAR charset utf8mb4),'0') AS `tb_preco`,
-  IFNULL(CAST(`pedido_item`.`qtd` AS CHAR charset utf8mb4),'0') AS `qtd`,
+  IFNULL(CAST(`pedido_item`.`qtd` AS DECIMAL(10,2)), 0.0) AS `qtd`,
   IFNULL(CAST(`pedido_item`.`preco_venda` AS DECIMAL(10,2)), 0.0) AS `preco_unit_original`,
   IFNULL(CAST(
     (`pedido_item`.`qtd` * `pedido_item`.`preco_venda`) AS DECIMAL(10,2)), 0.0)

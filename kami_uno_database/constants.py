@@ -60,7 +60,7 @@ ORDER_ITEM_DATE_COLS = [
     'dt_reserva_estoque',
     'dt_retorno',
 ]
-SALES_BILLINGS_NUM_COLS = {
+SALES_LINES_NUM_COLS = {
     'ano': np.int64,
     'mes': np.int64,
     'empresa_pedido': np.int64,
@@ -74,7 +74,7 @@ SALES_BILLINGS_NUM_COLS = {
     'cod_marca': np.int64,
     'custo_total': np.float64,
     'custo_kami': np.float64,
-    'qtd': np.int64,
+    'qtd': np.float64,
     'preco_unit_original': np.float64,
     'preco_total_original': np.float64,
     'margem_bruta': np.float64,
