@@ -6,6 +6,13 @@ from typing import Dict, List
 
 import numpy as np
 import pandas as pd
+from dotenv import load_dotenv
+from kami_filemanager import get_file_list_from
+from kami_logging import benchmark_with, logging_with
+from sqlalchemy import create_engine
+from sqlalchemy.engine import URL, Engine
+from sqlalchemy.exc import SQLAlchemyError
+
 from kami_uno_database.constants import (
     BILLINGS_DATETIME_COLS,
     BOARD_BILLINGS_NUM_COLS,
@@ -14,15 +21,13 @@ from kami_uno_database.constants import (
     FUTURE_BILLS_DATETIME_COLS,
     FUTURE_BILLS_NUM_COLS,
     SALES_LINES_NUM_COLS,
+    SOURCE_DIR,
 )
-from dotenv import load_dotenv
-from kami_filemanager import get_file_list_from
-from kami_logging import benchmark_with, logging_with
-from sqlalchemy import create_engine
-from sqlalchemy.engine import URL, Engine
-from sqlalchemy.exc import SQLAlchemyError
 
 db_connector_logger = logging.getLogger('database')
+QUERIES_DIR = path.join(SOURCE_DIR, 'queries')
+VIEWS_DIR = path.join(SOURCE_DIR, 'queries')
+
 load_dotenv()
 
 
@@ -81,7 +86,7 @@ def execute_queries(sql_files):
 @logging_with(db_connector_logger)
 def update_database_views():
     try:
-        views_scripts = get_file_list_from('in/views')
+        views_scripts = get_file_list_from(VIEWS_DIR)
         execute_queries(views_scripts)
     except Exception as e:
         db_connector_logger.exception('An unknow error occurred:', e)
@@ -242,8 +247,8 @@ def get_vw_future_bills() -> pd.DataFrame:
 def get_qy_sales_teams() -> pd.DataFrame:
     df = pd.DataFrame()
     try:
-        df = get_dataframe_from_sql(
-            'in/querys/qy_sales_teams.sql',
+        df = get_dataframe_from_sql_file(
+            sql_file=path.join(QUERIES_DIR, 'qy_sales_teams.sql'),
             cols_types={
                 'cod_colaborador': np.int64,
                 'cod_grupo_venda': np.int64,
@@ -260,8 +265,8 @@ def get_qy_sales_teams() -> pd.DataFrame:
 def get_qy_default_seller() -> pd.DataFrame:
     df = pd.DataFrame()
     try:
-        df = get_dataframe_from_sql(
-            'in/querys/qy_default_seller.sql',
+        df = get_dataframe_from_sql_file(
+            sql_file=path.join(QUERIES_DIR, 'qy_default_seller.sql'),
             cols_types={'cod_cliente': np.int64, 'cod_colaborador': np.int64},
         )
     except Exception as e:
@@ -271,11 +276,11 @@ def get_qy_default_seller() -> pd.DataFrame:
 
 @benchmark_with(db_connector_logger)
 @logging_with(db_connector_logger)
-def get_qy_contact_sellers() -> pd.DataFrame:
+def get_qy_sellers_contact() -> pd.DataFrame:
     df = pd.DataFrame()
     try:
-        df = get_dataframe_from_sql(
-            'in/querys/qy_contact_sellers.sql',
+        df = get_dataframe_from_sql_file(
+            sql_file=path.join(QUERIES_DIR, 'qy_sellers_contact.sql'),
             cols_types={'id': np.int64},
         )
     except Exception as e:
@@ -288,8 +293,8 @@ def get_qy_contact_sellers() -> pd.DataFrame:
 def get_qy_participant_seller() -> pd.DataFrame:
     df = pd.DataFrame()
     try:
-        df = get_dataframe_from_sql(
-            'in/querys/qy_participant_seller.sql',
+        df = get_dataframe_from_sql_file(
+            sql_file=path.join(QUERIES_DIR, 'qy_participant_seller.sql'),
             cols_types={'cod_cliente': np.int64, 'cod_colaborador': np.int64},
         )
     except Exception as e:

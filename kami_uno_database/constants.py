@@ -1,6 +1,11 @@
 # -*- coding: utf-8 -*-
+import os
+from datetime import datetime
+
 import numpy as np
 
+SOURCE_DIR = os.path.dirname(os.path.abspath(__file__))
+STARTING_YEAR = datetime.now().year - 1
 BILLINGS_DATETIME_COLS = [
     'dt_implante_pedido',
     'dt_entrega_comprometida',
