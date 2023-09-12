@@ -1,8 +1,7 @@
-
 SELECT
   IFNULL(
     CAST(`cliente`.`cod_cliente` AS CHAR charset utf8mb4), 
-  '0') AS '`cod_cliente`',
+  '0') AS 'cod_cliente',
   IFNULL(
     CAST(`cliente`.`cod_colaborador` AS CHAR charset utf8mb4), 
   '0') AS 'cod_colaborador'
