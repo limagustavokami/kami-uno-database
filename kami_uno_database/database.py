@@ -94,6 +94,7 @@ def update_database_views():
         db_connector_logger.exception('An unknow error occurred:', e)
         raise e
 
+
 @benchmark_with(db_connector_logger)
 @logging_with(db_connector_logger)
 def update_database_functions():
@@ -103,6 +104,7 @@ def update_database_functions():
     except Exception as e:
         db_connector_logger.exception('An unknow error occurred:', e)
         raise e
+
 
 @benchmark_with(db_connector_logger)
 @logging_with(db_connector_logger)

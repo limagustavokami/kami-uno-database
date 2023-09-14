@@ -1,6 +1,4 @@
 -- db_uc_kami.vw_board_billings source
-
-
 CREATE
 OR REPLACE ALGORITHM = UNDEFINED VIEW `vw_board_billings` AS
 SELECT
@@ -63,7 +61,10 @@ SELECT
     CAST(`pedido`.`situacao` AS CHAR charset utf8mb4),
     '0'
   ) AS `situacao_pedido`,
-  IFNULL (CAST(`pedido`.`nop` AS CHAR charset utf8mb4), '0') AS `nop`,
+  IFNULL (
+    CAST(`pedido`.`nop` AS CHAR charset utf8mb4),
+    '0'
+  ) AS `nop`,
   IFNULL (
     CAST(
       `nota_fiscal`.`desc_abrev_cfop` AS CHAR charset utf8mb4
@@ -89,7 +90,9 @@ SELECT
     '0'
   ) AS `nome_colaborador`,
   IFNULL (
-    CAST(`pedido`.`cod_cond_pagto` AS CHAR charset utf8mb4),
+    CAST(
+      `pedido`.`cod_cond_pagto` AS CHAR charset utf8mb4
+    ),
     '0'
   ) AS `cod_cond_pagto`,
   IFNULL (
@@ -133,10 +136,13 @@ SELECT
       IFNULL (
         `produto_empresa`.`vl_custo_kami`,
         (
-          SELECT `preco_item`.`preco_unit`
-          FROM `cd_preco_item` AS `preco_item`
-          WHERE `preco_item`.`cod_produto` = `pedido_item`.`cod_produto`
-          AND `preco_item`.`tb_preco` = 'TabTbCusto'
+          SELECT
+            `preco_item`.`preco_unit`
+          FROM
+            `cd_preco_item` AS `preco_item`
+          WHERE
+            `preco_item`.`cod_produto` = `pedido_item`.`cod_produto`
+            AND `preco_item`.`tb_preco` = 'TabTbCusto'
         )
       ) AS DECIMAL(10, 2)
     ),
@@ -152,7 +158,9 @@ SELECT
   ) AS `preco_unit_original`,
   IFNULL (
     CAST(
-      (`pedido_item`.`qtd` * `pedido_item`.`preco_venda`) AS DECIMAL(10, 2)
+      (
+        `pedido_item`.`qtd` * `pedido_item`.`preco_venda`
+      ) AS DECIMAL(10, 2)
     ),
     0.0
   ) AS `preco_total_original`,
