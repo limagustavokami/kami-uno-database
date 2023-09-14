@@ -38,10 +38,10 @@ SELECT
     IFNULL(
       `produto_empresa`.`vl_custo_kami`,
       (
-      SELECT cpi.preco_unit
-      FROM cd_preco_item AS cpi
-      WHERE cpi.cod_produto = `pedido_item`.`cod_produto`
-      AND cpi.tb_preco = 'TabTbCusto'
+      SELECT `preco_item`.`preco_unit`
+      FROM `cd_preco_item` AS `preco_item`
+      WHERE `preco_item`.`cod_produto` = `pedido_item`.`cod_produto`
+      AND `preco_item`.`tb_preco` = 'TabTbCusto'
       )
     ) AS DECIMAL(10, 2)), 0.0)
   AS `custo_kami`,

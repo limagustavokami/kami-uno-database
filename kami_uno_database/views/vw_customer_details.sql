@@ -1,5 +1,4 @@
 -- db_uc_kami.vw_customer_details source
-
 CREATE OR REPLACE
 ALGORITHM = UNDEFINED VIEW `vw_customer_details` AS
 SELECT DISTINCTROW 
@@ -7,8 +6,7 @@ SELECT DISTINCTROW
   IFNULL(CAST(`cliente`.`nome_cliente` AS CHAR charset utf8mb4), '0') AS `nome_cliente`,
   IFNULL(CAST(`cliente`.`razao_social` AS CHAR charset utf8mb4), '0') AS `razao_social`,
   IFNULL(CAST(
-    `ramo_atividade`.`desc_abrev` 
-    AS CHAR charset utf8mb4),'0')
+    `ramo_atividade`.`desc_abrev` AS CHAR charset utf8mb4),'0')
   AS `ramo_atividade`,
   IFNULL(CAST(`cliente_endereco`.`bairro` AS CHAR charset utf8mb4), '0') AS `bairro`,
   IFNULL(CAST(`cliente_endereco`.`cidade` AS CHAR charset utf8mb4), '0') AS `cidade`,
@@ -21,164 +19,51 @@ SELECT DISTINCTROW
     AS CHAR charset utf8mb4), 'null')
   AS `dt_cadastro`,
   IFNULL(CAST(
-    (
-    SELECT 
-      CASE
-        WHEN (SUM(`recebe`.`vl_total_titulo`) - SUM(`recebe`.`vl_total_baixa`)) > 0 
-        THEN (TIMESTAMPDIFF(DAY,`recebe`.`dt_vencimento`,CURRENT_DATE()))
-        ELSE '0'
-      END    
-    WHERE `recebe`.`dt_vencimento` < SUBDATE(CURDATE(), INTERVAL 1 DAY)    
-    )
-    AS CHAR charset utf8mb4), '0')
+    GetDiasAtraso(`cliente`.`cod_cliente`) AS CHAR charset utf8mb4), '0')
   AS `dias_atraso`,
-  IFNULL(CAST(
-    (
-    SELECT 
-      CASE 
-        WHEN (SUM(`recebe`.`vl_total_titulo`) - SUM(`recebe`.`vl_total_baixa`)) > 0
-        THEN (SUM(`recebe`.`vl_total_titulo`) - SUM(`recebe`.`vl_total_baixa`))
-        ELSE '0' 
-      END
-    WHERE `recebe`.`dt_vencimento` < SUBDATE(CURDATE(), INTERVAL 1 DAY)    
-    )
-    AS DECIMAL(10,2)), 0.0)
-  AS `valor_devido`,
+  IFNULL(CAST(GetValorDevido(`cliente`.`cod_cliente`) AS DECIMAL(10,2)), 0.0) AS `valor_devido`,
   IFNULL(CAST(
     DATE_FORMAT(
-      MIN(
-        (
-        SELECT `nota_fiscal`.`dt_emissao`
-        WHERE (`nota_fiscal`.`nop` IN
-        ('6.102', '6.404', 'BLACKFRIDAY', 'VENDA', 'VENDA_S_ESTOQUE', 'WORKSHOP', 'VENDA DE MERCADORIA P/ NÃO CONTRIBUINTE', 'VENDA MERCADORIA DENTRO DO ESTADO')
-        AND (`nota_fiscal`.`situacao` > 79)
-        AND (`nota_fiscal`.`situacao` < 86)
-        )
-      )),
-      '%Y-%m-%d %H:%i:%s'
-    )
+      GetDtPrimeiraCompra(`cliente`.`cod_cliente`), '%Y-%m-%d %H:%i:%s') 
     AS CHAR charset utf8mb4), 'null')
   AS `dt_primeira_compra`,
   IFNULL(CAST(
-    DATE_FORMAT(
-      MAX(
-        (
-        SELECT `nota_fiscal`.`dt_emissao`
-        WHERE (`nota_fiscal`.`nop` IN
-        ('6.102', '6.404', 'BLACKFRIDAY', 'VENDA', 'VENDA_S_ESTOQUE', 'WORKSHOP', 'VENDA DE MERCADORIA P/ NÃO CONTRIBUINTE', 'VENDA MERCADORIA DENTRO DO ESTADO')
-        AND (`nota_fiscal`.`situacao` > 79)
-        AND (`nota_fiscal`.`situacao` < 86)
-        )
-      )),
-      '%Y-%m-%d %H:%i:%s'
-      )
+    DATE_FORMAT(GetDtUltimaCompra(`cliente`.`cod_cliente`), '%Y-%m-%d %H:%i:%s') 
     AS CHAR charset utf8mb4), 'null')
   AS `dt_ultima_compra`,
-  IFNULL(CAST((
-    CASE
-      WHEN(
-        TIMESTAMPDIFF(DAY, MAX(`nota_fiscal`.`dt_emissao`), CURRENT_DATE()) > 180
-        AND (`nota_fiscal`.`nop` IN
-        ('6.102', '6.404', 'BLACKFRIDAY', 'VENDA', 'VENDA_S_ESTOQUE', 'WORKSHOP', 'VENDA DE MERCADORIA P/ NÃO CONTRIBUINTE', 'VENDA MERCADORIA DENTRO DO ESTADO'))
-        AND (`nota_fiscal`.`situacao` > 79)
-        AND (`nota_fiscal`.`situacao` < 86)
-      )
-      THEN 'PERDIDO'
-      WHEN(
-        TIMESTAMPDIFF(DAY, MAX(`nota_fiscal`.`dt_emissao`), CURRENT_DATE()) > 90
-        AND (`nota_fiscal`.`nop` IN
-        ('6.102', '6.404', 'BLACKFRIDAY', 'VENDA', 'VENDA_S_ESTOQUE', 'WORKSHOP', 'VENDA DE MERCADORIA P/ NÃO CONTRIBUINTE', 'VENDA MERCADORIA DENTRO DO ESTADO'))
-        AND (`nota_fiscal`.`situacao` > 79)
-        AND (`nota_fiscal`.`situacao` < 86)
-      )
-      THEN 'INATIVO'
-      WHEN(
-        TIMESTAMPDIFF(DAY, MAX(`nota_fiscal`.`dt_emissao`), CURRENT_DATE()) > 60
-        AND (`nota_fiscal`.`nop` IN
-        ('6.102', '6.404', 'BLACKFRIDAY', 'VENDA', 'VENDA_S_ESTOQUE', 'WORKSHOP', 'VENDA DE MERCADORIA P/ NÃO CONTRIBUINTE', 'VENDA MERCADORIA DENTRO DO ESTADO'))
-        AND (`nota_fiscal`.`situacao` > 79)
-        AND (`nota_fiscal`.`situacao` < 86)
-      )        
-      THEN 'PRE-INATIVO'
-      ELSE 'ATIVO'
-    END)
-    AS CHAR charset utf8mb4), 'null')
+  IFNULL(CAST(
+    GetStatusCliente(`cliente`.`cod_cliente`) AS CHAR charset utf8mb4), 'null')
   AS 'STATUS',
   IFNULL(CAST(
-    MAX((
-      SELECT YEAR(`nota_fiscal`.`dt_emissao`)
-      WHERE (`nota_fiscal`.`nop` IN
-        ('6.102', '6.404', 'BLACKFRIDAY', 'VENDA', 'VENDA_S_ESTOQUE', 'WORKSHOP', 'VENDA DE MERCADORIA P/ NÃO CONTRIBUINTE', 'VENDA MERCADORIA DENTRO DO ESTADO')
-        AND (`nota_fiscal`.`situacao` > 79)
-        AND (`nota_fiscal`.`situacao` < 86)
-    ))) AS CHAR charset utf8mb4), '0')
+    YEAR(GetDtUltimaCompra(`cliente`.`cod_cliente`)) AS CHAR charset utf8mb4), '0')
   AS `ultimo_ano_ativo`,
   IFNULL(CAST(
-    COUNT((
-      SELECT `nota_fiscal`.`cod_nota_fiscal`
-      WHERE (`nota_fiscal`.`nop` IN
-        ('6.102', '6.404', 'BLACKFRIDAY', 'VENDA', 'VENDA_S_ESTOQUE', 'WORKSHOP', 'VENDA DE MERCADORIA P/ NÃO CONTRIBUINTE', 'VENDA MERCADORIA DENTRO DO ESTADO')
-        AND (`nota_fiscal`.`situacao` > 79)
-        AND (`nota_fiscal`.`situacao` < 86)
-      )))
-    AS CHAR charset utf8mb4), '0')
+    GetQtdTotalCompras(`cliente`.`cod_cliente`) AS CHAR charset utf8mb4), '0')
   AS `qtd_total_compras`,
   IFNULL(CAST(
-    COUNT((
-      SELECT `nota_fiscal`.`cod_nota_fiscal`
-      WHERE (`nota_fiscal`.`nop` IN
-        ('6.102', '6.404', 'BLACKFRIDAY', 'VENDA', 'VENDA_S_ESTOQUE', 'WORKSHOP', 'VENDA DE MERCADORIA P/ NÃO CONTRIBUINTE', 'VENDA MERCADORIA DENTRO DO ESTADO')
-        AND (`nota_fiscal`.`situacao` > 79)
-        AND (`nota_fiscal`.`situacao` < 86)
-        AND (TIMESTAMPDIFF(DAY, `nota_fiscal`.`dt_emissao`, CURRENT_DATE()) <= 180)
-      )))
-    AS CHAR charset utf8mb4), '0')
+    GetQtdComprasSemestre(`cliente`.`cod_cliente`) AS CHAR charset utf8mb4), '0')
   AS `qtd_compras_semestre`,
   IFNULL(CAST(
-    (
-    SELECT SUM(`nota_fiscal`.`vl_total_nota_fiscal`)
-    WHERE TIMESTAMPDIFF(DAY, `nota_fiscal`.`dt_emissao`, CURRENT_DATE()) <= 180
-    AND (`nota_fiscal`.`nop` IN
-        ('6.102', '6.404', 'BLACKFRIDAY', 'VENDA', 'VENDA_S_ESTOQUE', 'WORKSHOP', 'VENDA DE MERCADORIA P/ NÃO CONTRIBUINTE', 'VENDA MERCADORIA DENTRO DO ESTADO'))
-    AND (`nota_fiscal`.`situacao` > 79)
-    AND (`nota_fiscal`.`situacao` < 86)
-    )    
-    AS DECIMAL(10,2)), 0.0)
-  AS `total_compras_semestre`,
+    GetTotalComprasBimestre(`cliente`.`cod_cliente`) AS DECIMAL(10,2)), 0.0)
+  AS `total_compras_bimestre`,
   IFNULL(CAST(
-      (
-      SELECT SUM(`nota_fiscal`.`vl_total_nota_fiscal`)
-      WHERE TIMESTAMPDIFF(DAY, `nota_fiscal`.`dt_emissao`, CURRENT_DATE()) <= 90
-      AND (`nota_fiscal`.`nop` IN
-        ('6.102', '6.404', 'BLACKFRIDAY', 'VENDA', 'VENDA_S_ESTOQUE', 'WORKSHOP', 'VENDA DE MERCADORIA P/ NÃO CONTRIBUINTE', 'VENDA MERCADORIA DENTRO DO ESTADO'))
-      AND (`nota_fiscal`.`situacao` > 79)
-      AND (`nota_fiscal`.`situacao` < 86)
-      )   
-      AS DECIMAL(10,2)), 0.0)
+    GetTotalComprasTrimestre(`cliente`.`cod_cliente`) AS DECIMAL(10,2)), 0.0)
   AS `total_compras_trimestre`,
   IFNULL(CAST(
-      (
-      SELECT SUM(`nota_fiscal`.`vl_total_nota_fiscal`)
-      WHERE TIMESTAMPDIFF(DAY, `nota_fiscal`.`dt_emissao`, CURRENT_DATE()) <= 60
-      AND (`nota_fiscal`.`nop` IN
-        ('6.102', '6.404', 'BLACKFRIDAY', 'VENDA', 'VENDA_S_ESTOQUE', 'WORKSHOP', 'VENDA DE MERCADORIA P/ NÃO CONTRIBUINTE', 'VENDA MERCADORIA DENTRO DO ESTADO'))      
-      AND (`nota_fiscal`.`situacao` > 79)
-      AND (`nota_fiscal`.`situacao` < 86)      
-      )
-      AS DECIMAL(10,2)), 0.0)
-  AS `total_compras_bimestre`
-FROM ((((( `cd_cliente` AS `cliente`
-LEFT JOIN `vd_nota_fiscal` AS `nota_fiscal` 
-  ON (`nota_fiscal`.`cod_cliente` = `cliente`.`cod_cliente`))
+    GetTotalComprasSemestre(`cliente`.`cod_cliente`) AS DECIMAL(10,2)), 0.0)
+  AS `total_compras_semestre`  
+FROM (((( `cd_cliente` AS `cliente`
 LEFT JOIN `cd_cliente_endereco` AS `cliente_endereco`
   ON (`cliente_endereco`.`cod_cliente` = `cliente`.`cod_cliente`))
 LEFT JOIN `cd_cliente_atividade` AS `cliente_atividade`
   ON (`cliente_atividade`.`cod_cliente` = `cliente`.`cod_cliente`))
 LEFT JOIN `cd_ramo_atividade` AS `ramo_atividade`
-  ON (`cliente_atividade`.`cod_ramo_atividade` = `ramo_atividade`.`cod_ramo_atividade`))
-LEFT JOIN `fn_titulo_receber` AS `recebe`
-  ON ((`recebe`.`cod_cliente` = `cliente`.`cod_cliente`)
-  AND (`recebe`.`situacao` < 30)))
-WHERE ((`nota_fiscal`.`dt_emissao` >= '2022-01-01')
-  AND (`nota_fiscal`.`cod_empresa` IN (1,2,3,4,5,6,9,10,11,12,13,14,15,16)))  
-GROUP BY `cliente`.`cod_cliente`
+  ON (`cliente_atividade`.`cod_ramo_atividade` = `ramo_atividade`.`cod_ramo_atividade`)))
+WHERE (`cliente`.`cod_cliente` IN (
+  SELECT 
+    DISTINCTROW `nota_fiscal`.`cod_cliente`
+  FROM `vd_nota_fiscal` AS `nota_fiscal`
+  WHERE `nota_fiscal`.`dt_emissao` >= '2022-01-01'
+  AND (`nota_fiscal`.`cod_empresa` IN (1,2,3,4,5,6,9,10,11,12,13,14,15,16))
+))  
+GROUP BY `cliente`.`cod_cliente`;

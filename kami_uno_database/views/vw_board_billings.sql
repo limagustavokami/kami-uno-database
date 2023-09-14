@@ -133,13 +133,10 @@ SELECT
       IFNULL (
         `produto_empresa`.`vl_custo_kami`,
         (
-          SELECT
-            cpi.preco_unit
-          FROM
-            cd_preco_item AS cpi
-          WHERE
-            cpi.cod_produto = `pedido_item`.`cod_produto`
-            AND cpi.tb_preco = 'TabTbCusto'
+          SELECT `preco_item`.`preco_unit`
+          FROM `cd_preco_item` AS `preco_item`
+          WHERE `preco_item`.`cod_produto` = `pedido_item`.`cod_produto`
+          AND `preco_item`.`tb_preco` = 'TabTbCusto'
         )
       ) AS DECIMAL(10, 2)
     ),
@@ -357,7 +354,7 @@ FROM
     )
   )
 WHERE
-  `pedido`.`dt_implant` >= '2022-01-01'
+  `pedido`.`dt_implant` >= '2023-01-01'
   AND `pedido`.`cod_empresa` IN (1, 2, 3, 4, 5, 6, 9, 10, 11, 12, 13, 14, 15, 16)
   AND `pedido`.`situacao` < 200
 GROUP BY
