@@ -362,7 +362,7 @@ FROM
     )
   )
 WHERE
-  `pedido`.`dt_implant` >= '2023-01-01'
+  `pedido`.`dt_implant` >= '2022-01-01'
   AND `pedido`.`cod_empresa` IN (1, 2, 3, 4, 5, 6, 9, 10, 11, 12, 13, 14, 15, 16)
   AND `pedido`.`situacao` < 200
 GROUP BY
