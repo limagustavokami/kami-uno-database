@@ -28,6 +28,7 @@ db_connector_logger = logging.getLogger('database')
 QUERIES_DIR = path.join(SOURCE_DIR, 'queries')
 VIEWS_DIR = path.join(SOURCE_DIR, 'views')
 FUNCTIONS_DIR = path.join(SOURCE_DIR, 'functions')
+INDEXES_DIR = path.join(SOURCE_DIR, 'indexes')
 
 
 load_dotenv()
@@ -105,6 +106,15 @@ def update_database_functions():
         db_connector_logger.exception('An unknow error occurred:', e)
         raise e
 
+@benchmark_with(db_connector_logger)
+@logging_with(db_connector_logger)
+def update_database_indexes():
+    try:
+        indexes_scripts = get_file_list_from(INDEXES_DIR)
+        execute_queries(indexes_scripts)
+    except Exception as e:
+        db_connector_logger.exception('An unknow error occurred:', e)
+        raise e
 
 @benchmark_with(db_connector_logger)
 @logging_with(db_connector_logger)

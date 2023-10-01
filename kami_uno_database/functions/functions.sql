@@ -141,12 +141,7 @@ DELIMITER //
 
 CREATE FUNCTION `GetDiasUltimaCompra`(cod_cliente INT) RETURNS INT
 BEGIN
-  DECLARE dias_ultima_compra INT;
-SELECT(
-  TIMESTAMPDIFF(DAY, `GetDtUltimaCompra`(cod_cliente), CURRENT_DATE())
-) INTO dias_ultima_compra;
-
-RETURN dias_ultima_compra;
+    RETURN TIMESTAMPDIFF(DAY, `GetDtUltimaCompra`(cod_cliente), CURRENT_DATE());
 END //
 
 DELIMITER ;
@@ -173,26 +168,40 @@ DELIMITER //
 
 CREATE FUNCTION `GetStatusCliente`(cod_cliente INT) RETURNS CHAR(11)
 BEGIN
-  DECLARE cliente_status CHAR(11);
-  DECLARE dias_ultima_compra INT;
-SET dias_ultima_compra = `GetDiasUltimaCompra`(cod_cliente);
-SELECT(
-  CASE
-    WHEN(`GetQtdTotalCompras`(cod_cliente) = 1
-    AND `GetDiasUltimaCompra`(cod_cliente) <= 30)
-    THEN 'NOVO'      
-    WHEN(dias_ultima_compra > 60) THEN 'PRE-INATIVO'
-    WHEN(dias_ultima_compra > 90) THEN 'INATIVO'
-    WHEN(dias_ultima_compra > 180) THEN 'PERDIDO'
-    WHEN(`GetDiasUltimaCompra`(cod_cliente) <= 30
-    AND `GetDiasPenultimaCompra`(cod_cliente) >= 180
-    AND `GetQtdTotalCompras`(cod_cliente) > 1)
-    THEN 'REATIVADO'
-    ELSE 'ATIVO'
-  END
-) INTO cliente_status;
+    DECLARE cliente_status CHAR(11);
+    DECLARE dias_ultima_compra INT;
+    DECLARE dias_penultima_compra INT;
 
-RETURN cliente_status;
+    SET dias_ultima_compra = `GetDiasUltimaCompra`(cod_cliente);
+    SET dias_penultima_compra = `GetDiasPenultimaCompra`(cod_cliente);
+
+    IF (`GetQtdTotalCompras`(cod_cliente) = 1) THEN
+        IF (dias_ultima_compra <= 30) THEN
+            SET cliente_status = 'NOVO';
+        ELSEIF (dias_ultima_compra <= 60) THEN
+            SET cliente_status = 'PRÉ-INATIVO';
+        ELSEIF (dias_ultima_compra <= 90) THEN
+            SET cliente_status = 'INATIVO';
+        ELSEIF (dias_ultima_compra <= 180) THEN
+            SET cliente_status = 'PERDIDO';
+        END IF;
+    ELSEIF (`GetQtdTotalCompras`(cod_cliente) > 1) THEN
+        IF (dias_ultima_compra <= 30 AND dias_penultima_compra < 180) THEN
+            SET cliente_status = 'REATIVADO';
+        ELSEIF (dias_ultima_compra <= 60 AND dias_penultima_compra > 180) THEN
+            SET cliente_status = 'RECUPERADO';
+        ELSEIF (dias_ultima_compra <= 30) THEN
+            SET cliente_status = 'ATIVO';
+        ELSEIF (dias_ultima_compra <= 60) THEN
+            SET cliente_status = 'PRÉ-INATIVO';
+        ELSEIF (dias_ultima_compra <= 90) THEN
+            SET cliente_status = 'INATIVO';
+        ELSEIF (dias_ultima_compra <= 180) THEN
+            SET cliente_status = 'PERDIDO';
+        END IF;
+    END IF;
+
+    RETURN cliente_status;
 END //
 
 DELIMITER ;
