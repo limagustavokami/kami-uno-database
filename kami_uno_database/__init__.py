@@ -16,6 +16,8 @@ from .database import (
     get_vw_future_bills,
     get_vw_sales_lines,
     update_database_views,
+    update_database_functions,
+    update_database_indexes
 )
 
 __all__ = [
@@ -24,6 +26,8 @@ __all__ = [
     'execute_query',
     'execute_queries',
     'update_database_views',
+    'update_database_functions',
+    'update_database_indexes',
     'get_dataframe_from_sql_query',
     'get_dataframe_from_sql_file',
     'get_dataframe_from_sql',

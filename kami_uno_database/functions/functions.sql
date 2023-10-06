@@ -1,352 +1,202 @@
 USE db_uc_kami;
-DROP FUNCTION IF EXISTS `GetDiasAtraso`;
 
+DROP FUNCTION IF EXISTS GetDiasAtraso;
 DELIMITER //
-
-CREATE FUNCTION `GetDiasAtraso`(cod_cliente INT) RETURNS INT
+CREATE FUNCTION GetDiasAtraso(cod_cliente INT) RETURNS INT
 BEGIN
-  DECLARE dias_atraso INT;
-SELECT(
-  CASE
-    WHEN (SUM(`recebe`.`vl_total_titulo`) - SUM(`recebe`.`vl_total_baixa`)) > 0
-    THEN (TIMESTAMPDIFF(DAY, `recebe`.`dt_vencimento`, CURRENT_DATE()))
-    ELSE 0
-  END
-) INTO dias_atraso
-FROM `fn_titulo_receber` AS `recebe`
-WHERE (`recebe`.`dt_vencimento` < SUBDATE(CURDATE(), INTERVAL 1 DAY))
-AND (`recebe`.`situacao` < 30)
-AND (`recebe`.`cod_cliente` = cod_cliente);
-
-RETURN dias_atraso;
+  RETURN (
+    SELECT
+      CASE
+        WHEN (SUM(recebe.vl_total_titulo) - SUM(recebe.vl_total_baixa)) > 0
+        THEN TIMESTAMPDIFF(DAY, recebe.dt_vencimento, CURRENT_DATE())
+        ELSE 0
+      END
+    FROM fn_titulo_receber AS recebe
+    WHERE recebe.dt_vencimento < SUBDATE(CURDATE(), INTERVAL 1 DAY)
+    AND recebe.situacao < 30
+    AND recebe.cod_cliente = cod_cliente
+  );
 END //
-
 DELIMITER ;
 
-DROP FUNCTION IF EXISTS `GetValorDevido`;
-
+DROP FUNCTION IF EXISTS GetValorDevido;
 DELIMITER //
-
-CREATE FUNCTION `GetValorDevido`(cod_cliente INT) RETURNS INT
+CREATE FUNCTION GetValorDevido(cod_cliente INT) RETURNS INT
 BEGIN
-  DECLARE valor_devido INT;
-SELECT(
-  CASE
-    WHEN (SUM(`recebe`.`vl_total_titulo`) - SUM(`recebe`.`vl_total_baixa`)) > 0
-    THEN (SUM(`recebe`.`vl_total_titulo`) - SUM(`recebe`.`vl_total_baixa`))
-    ELSE '0'
-  END
-) INTO valor_devido
-FROM `fn_titulo_receber` AS `recebe`
-WHERE `recebe`.`dt_vencimento` < SUBDATE(CURDATE(), INTERVAL 1 DAY)
-AND (`recebe`.`situacao` < 30)
-AND (`recebe`.`cod_cliente` = cod_cliente);
-
-RETURN valor_devido;
+  RETURN (
+    SELECT
+      CASE
+        WHEN (SUM(recebe.vl_total_titulo) - SUM(recebe.vl_total_baixa)) > 0
+        THEN (SUM(recebe.vl_total_titulo) - SUM(recebe.vl_total_baixa))
+        ELSE 0
+      END
+    FROM fn_titulo_receber AS recebe
+    WHERE recebe.dt_vencimento < SUBDATE(CURDATE(), INTERVAL 1 DAY)
+    AND recebe.situacao < 30
+    AND recebe.cod_cliente = cod_cliente
+  );
 END //
-
 DELIMITER ;
 
-DROP FUNCTION IF EXISTS `GetDtPrimeiraCompra`;
-
+DROP FUNCTION IF EXISTS GetDtPrimeiraCompra;
 DELIMITER //
-
-CREATE FUNCTION `GetDtPrimeiraCompra`(cod_cliente INT) RETURNS DATETIME
+CREATE FUNCTION GetDtPrimeiraCompra(cod_cliente INT) RETURNS DATETIME
 BEGIN
-  DECLARE dt_primeira_compra DATETIME;
-
-SELECT(MIN(`nota_fiscal`.`dt_emissao`)) INTO dt_primeira_compra
-FROM `vd_nota_fiscal` AS `nota_fiscal`
-WHERE(`nota_fiscal`.`nop` IN (
-  '6.102',
-  '6.404',
-  'BLACKFRIDAY',
-  'VENDA',
-  'VENDA_S_ESTOQUE',
-  'WORKSHOP',
-  'VENDA DE MERCADORIA P/ NÃO CONTRIBUINTE',
-  'VENDA MERCADORIA DENTRO DO ESTADO'
-)
-AND (`nota_fiscal`.`situacao` > 79)
-AND (`nota_fiscal`.`situacao` < 86)
-AND (`nota_fiscal`.`cod_cliente` = cod_cliente));
-
-RETURN dt_primeira_compra;
+  RETURN (
+    SELECT MIN(nota_fiscal.dt_emissao)
+    FROM vw_sales_invoices AS nota_fiscal
+    WHERE nota_fiscal.cod_cliente = cod_cliente
+  );
 END //
-
 DELIMITER ;
 
-DROP FUNCTION IF EXISTS `GetDtUltimaCompra`;
-
+DROP FUNCTION IF EXISTS GetDtUltimaCompra;
 DELIMITER //
-
-CREATE FUNCTION `GetDtUltimaCompra`(cod_cliente INT) RETURNS DATETIME
+CREATE FUNCTION GetDtUltimaCompra(cod_cliente INT) RETURNS DATETIME
 BEGIN
-  DECLARE dt_ultima_compra DATETIME;
-SELECT(MAX(`nota_fiscal`.`dt_emissao`)) INTO dt_ultima_compra
-FROM `vd_nota_fiscal` AS `nota_fiscal`
-WHERE(`nota_fiscal`.`nop` IN (
-  '6.102',
-  '6.404',
-  'BLACKFRIDAY',
-  'VENDA',
-  'VENDA_S_ESTOQUE',
-  'WORKSHOP',
-  'VENDA DE MERCADORIA P/ NÃO CONTRIBUINTE',
-  'VENDA MERCADORIA DENTRO DO ESTADO'
-)
-AND (`nota_fiscal`.`situacao` > 79)
-AND (`nota_fiscal`.`situacao` < 86)
-AND (`nota_fiscal`.`cod_cliente` = cod_cliente));
-
-RETURN dt_ultima_compra;
+  RETURN (
+    SELECT MAX(nota_fiscal.dt_emissao)
+    FROM vw_sales_invoices AS nota_fiscal
+    WHERE nota_fiscal.cod_cliente = cod_cliente
+  );
 END //
-
 DELIMITER ;
 
-DROP FUNCTION IF EXISTS `GetDtPenultimaCompra`;
-
+DROP FUNCTION IF EXISTS GetDtPenultimaCompra;
 DELIMITER //
-
-CREATE FUNCTION `GetDtPenultimaCompra`(cod_cliente INT) RETURNS DATETIME
+CREATE FUNCTION GetDtPenultimaCompra(cod_cliente INT) RETURNS DATETIME
 BEGIN
-  DECLARE dt_penultima_compra DATETIME;
-SELECT `nota_fiscal`.`dt_emissao` INTO dt_penultima_compra
-FROM `vd_nota_fiscal` AS `nota_fiscal`
-WHERE (`nota_fiscal`.`nop` IN (
-  '6.102',
-  '6.404',
-  'BLACKFRIDAY',
-  'VENDA',
-  'VENDA_S_ESTOQUE',
-  'WORKSHOP',
-  'VENDA DE MERCADORIA P/ NÃO CONTRIBUINTE',
-  'VENDA MERCADORIA DENTRO DO ESTADO'
-)
-AND (`nota_fiscal`.`situacao` > 79)
-AND (`nota_fiscal`.`situacao` < 86)
-AND (`nota_fiscal`.`cod_cliente` = cod_cliente)
-)
-ORDER BY `nota_fiscal`.`dt_emissao` DESC
-LIMIT 1 OFFSET 1;
-
-RETURN dt_penultima_compra;
+  RETURN (
+    SELECT nota_fiscal.dt_emissao
+    FROM vw_sales_invoices AS nota_fiscal
+    WHERE nota_fiscal.cod_cliente = cod_cliente
+    ORDER BY nota_fiscal.dt_emissao DESC
+    LIMIT 1 OFFSET 1
+  );
 END //
-
 DELIMITER ;
 
-DROP FUNCTION IF EXISTS `GetDiasUltimaCompra`;
-
+DROP FUNCTION IF EXISTS GetDiasUltimaCompra;
 DELIMITER //
-
-CREATE FUNCTION `GetDiasUltimaCompra`(cod_cliente INT) RETURNS INT
+CREATE FUNCTION GetDiasUltimaCompra(cod_cliente INT) RETURNS INT
 BEGIN
-    RETURN TIMESTAMPDIFF(DAY, `GetDtUltimaCompra`(cod_cliente), CURRENT_DATE());
+    RETURN TIMESTAMPDIFF(DAY, GetDtUltimaCompra(cod_cliente), CURRENT_DATE());
 END //
-
 DELIMITER ;
 
-DROP FUNCTION IF EXISTS `GetDiasPenultimaCompra`;
-
+DROP FUNCTION IF EXISTS GetDiasPenultimaCompra;
 DELIMITER //
-
-CREATE FUNCTION `GetDiasPenultimaCompra`(cod_cliente INT) RETURNS INT
+CREATE FUNCTION GetDiasPenultimaCompra(cod_cliente INT) RETURNS INT
 BEGIN
-  DECLARE dias_penultima_compra INT;
-SELECT(
-  TIMESTAMPDIFF(DAY, `GetDtPenultimaCompra`(cod_cliente), CURRENT_DATE())
-) INTO dias_penultima_compra;
-
-RETURN dias_penultima_compra;
+  RETURN TIMESTAMPDIFF(DAY, GetDtPenultimaCompra(cod_cliente), CURRENT_DATE());
 END //
-
 DELIMITER ;
 
-DROP FUNCTION IF EXISTS `GetStatusCliente`;
-
+DROP FUNCTION IF EXISTS GetQtdTotalCompras;
 DELIMITER //
-
-CREATE FUNCTION `GetStatusCliente`(cod_cliente INT) RETURNS CHAR(11)
+CREATE FUNCTION GetQtdTotalCompras(cod_cliente INT) RETURNS INT
 BEGIN
-    DECLARE cliente_status CHAR(11);
-    DECLARE dias_ultima_compra INT;
-    DECLARE dias_penultima_compra INT;
-
-    SET dias_ultima_compra = `GetDiasUltimaCompra`(cod_cliente);
-    SET dias_penultima_compra = `GetDiasPenultimaCompra`(cod_cliente);
-
-    IF (`GetQtdTotalCompras`(cod_cliente) = 1) THEN
-        IF (dias_ultima_compra <= 30) THEN
-            SET cliente_status = 'NOVO';
-        ELSEIF (dias_ultima_compra <= 60) THEN
-            SET cliente_status = 'PRÉ-INATIVO';
-        ELSEIF (dias_ultima_compra <= 90) THEN
-            SET cliente_status = 'INATIVO';
-        ELSEIF (dias_ultima_compra <= 180) THEN
-            SET cliente_status = 'PERDIDO';
-        END IF;
-    ELSEIF (`GetQtdTotalCompras`(cod_cliente) > 1) THEN
-        IF (dias_ultima_compra <= 30 AND dias_penultima_compra < 180) THEN
-            SET cliente_status = 'REATIVADO';
-        ELSEIF (dias_ultima_compra <= 60 AND dias_penultima_compra > 180) THEN
-            SET cliente_status = 'RECUPERADO';
-        ELSEIF (dias_ultima_compra <= 30) THEN
-            SET cliente_status = 'ATIVO';
-        ELSEIF (dias_ultima_compra <= 60) THEN
-            SET cliente_status = 'PRÉ-INATIVO';
-        ELSEIF (dias_ultima_compra <= 90) THEN
-            SET cliente_status = 'INATIVO';
-        ELSEIF (dias_ultima_compra <= 180) THEN
-            SET cliente_status = 'PERDIDO';
-        END IF;
-    END IF;
-
-    RETURN cliente_status;
+  RETURN (
+    SELECT COUNT(nota_fiscal.cod_nota_fiscal)
+    FROM vw_sales_invoices AS nota_fiscal
+    WHERE nota_fiscal.cod_cliente = cod_cliente
+  );
 END //
-
 DELIMITER ;
 
-DROP FUNCTION IF EXISTS `GetQtdTotalCompras`;
+DROP FUNCTION IF EXISTS GetQtdComprasSemestre;
+DELIMITER //
+CREATE FUNCTION GetQtdComprasSemestre(cod_cliente INT) RETURNS INT
+BEGIN
+  RETURN (
+    SELECT COUNT(nota_fiscal.cod_nota_fiscal)
+    FROM vw_sales_invoices AS nota_fiscal
+    WHERE nota_fiscal.cod_cliente = cod_cliente
+    AND (TIMESTAMPDIFF(DAY, nota_fiscal.dt_emissao, CURRENT_DATE()) <= 180)
+  );
+END //
+DELIMITER ;
+
+DROP FUNCTION IF EXISTS GetTotalComprasBimestre;
+DELIMITER //
+CREATE FUNCTION GetTotalComprasBimestre(cod_cliente INT) RETURNS DECIMAL(10, 2) 
+BEGIN
+  RETURN (
+    SELECT SUM(nota_fiscal.vl_total_nota_fiscal)
+    FROM vw_sales_invoices AS nota_fiscal
+    WHERE nota_fiscal.cod_cliente = cod_cliente
+    AND (TIMESTAMPDIFF(DAY, nota_fiscal.dt_emissao, CURRENT_DATE()) <= 60)
+  );
+END //
+DELIMITER ;
+
+DROP FUNCTION IF EXISTS GetTotalComprasTrimestre;
+DELIMITER //
+CREATE FUNCTION GetTotalComprasTrimestre(cod_cliente INT) RETURNS DECIMAL(10, 2)
+BEGIN
+  RETURN (
+    SELECT SUM(nota_fiscal.vl_total_nota_fiscal)
+    FROM vw_sales_invoices AS nota_fiscal
+    WHERE nota_fiscal.cod_cliente = cod_cliente
+    AND (TIMESTAMPDIFF(DAY, nota_fiscal.dt_emissao, CURRENT_DATE()) <= 90)
+  );
+END //
+DELIMITER ;
+
+DROP FUNCTION IF EXISTS GetTotalComprasSemestre;
+DELIMITER //
+CREATE FUNCTION GetTotalComprasSemestre(cod_cliente INT) RETURNS DECIMAL(10, 2) 
+BEGIN
+  RETURN (
+    SELECT SUM(nota_fiscal.vl_total_nota_fiscal)
+    FROM vw_sales_invoices AS nota_fiscal
+    WHERE nota_fiscal.cod_cliente = cod_cliente
+    AND (TIMESTAMPDIFF(DAY, nota_fiscal.dt_emissao, CURRENT_DATE()) <= 180)
+  );
+END //
+DELIMITER ;
+
+DROP FUNCTION IF EXISTS GetStatusCliente;
 
 DELIMITER //
-
-CREATE FUNCTION `GetQtdTotalCompras`(cod_cliente INT) RETURNS INT
+CREATE FUNCTION GetStatusCliente(cod_cliente INT) RETURNS CHAR(11)
 BEGIN
+  DECLARE dias_desde_ultima_compra INT;
+  DECLARE dias_desde_penultima_compra INT;
+  DECLARE diferenca_dias_ultimas_2_compras INT;
   DECLARE qtd_total_compras INT;
-SELECT(COUNT(`nota_fiscal`.`cod_nota_fiscal`)) INTO qtd_total_compras
-FROM `vd_nota_fiscal` AS `nota_fiscal`
-WHERE(`nota_fiscal`.`nop` IN (
-  '6.102',
-  '6.404',
-  'BLACKFRIDAY',
-  'VENDA',
-  'VENDA_S_ESTOQUE',
-  'WORKSHOP',
-  'VENDA DE MERCADORIA P/ NÃO CONTRIBUINTE',
-  'VENDA MERCADORIA DENTRO DO ESTADO'
-)
-AND (`nota_fiscal`.`situacao` > 79)
-AND (`nota_fiscal`.`situacao` < 86)
-AND (`nota_fiscal`.`cod_cliente` = cod_cliente));
+  
+  SET dias_desde_ultima_compra = GetDiasUltimaCompra(cod_cliente);
+  SET dias_desde_penultima_compra = GetDiasPenultimaCompra(cod_cliente);  
+  SET diferenca_dias_ultimas_2_compras = (dias_desde_penultima_compra - dias_desde_ultima_compra);
+  SET qtd_total_compras = GetQtdTotalCompras(cod_cliente);
 
-RETURN qtd_total_compras;
+  RETURN (
+    CASE
+      WHEN (qtd_total_compras = 1 AND dias_desde_ultima_compra <= 30)
+      THEN 'NOVO'
+      
+      WHEN (qtd_total_compras > 1 AND dias_desde_ultima_compra <= 30)
+      THEN 'ATIVO'
+      
+      WHEN (dias_desde_ultima_compra > 30 AND dias_desde_ultima_compra <= 60)      
+      THEN 'PRÉ-INATIVO'
+      
+      WHEN (dias_desde_ultima_compra > 60 AND dias_desde_ultima_compra <= 180)
+      THEN 'INATIVO'
+   
+      WHEN qtd_total_compras > 1
+      AND dias_desde_ultima_compra <= 30      
+      AND diferenca_dias_ultimas_2_compras <= 180
+      THEN 'REATIVADO'
+      
+      WHEN qtd_total_compras > 1
+      AND dias_desde_ultima_compra <= 30
+      AND diferenca_dias_ultimas_2_compras > 180
+      THEN 'RECUPERADO'
+      
+      ELSE 'PERDIDO'
+    END
+  );
 END //
-
-DELIMITER ;
-
-DROP FUNCTION IF EXISTS `GetQtdComprasSemestre`;
-
-DELIMITER //
-
-CREATE FUNCTION `GetQtdComprasSemestre`(cod_cliente INT) RETURNS INT
-BEGIN
-  DECLARE qtd_compras_semestre INT;
-
-SELECT(COUNT(`nota_fiscal`.`cod_nota_fiscal`)) INTO qtd_compras_semestre
-FROM `vd_nota_fiscal` AS `nota_fiscal`
-WHERE (`nota_fiscal`.`nop` IN (
-  '6.102',
-  '6.404',
-  'BLACKFRIDAY',
-  'VENDA',
-  'VENDA_S_ESTOQUE',
-  'WORKSHOP',
-  'VENDA DE MERCADORIA P/ NÃO CONTRIBUINTE',
-  'VENDA MERCADORIA DENTRO DO ESTADO'
-)
-AND (`nota_fiscal`.`situacao` > 79)
-AND (`nota_fiscal`.`situacao` < 86)
-AND (TIMESTAMPDIFF(DAY, `nota_fiscal`.`dt_emissao`, CURRENT_DATE()) <= 180)
-AND (`nota_fiscal`.`cod_cliente` = cod_cliente));
-
-RETURN qtd_compras_semestre;
-END //
-
-DELIMITER ;
-
-DROP FUNCTION IF EXISTS `GetTotalComprasBimestre`;
-
-DELIMITER //
-
-CREATE FUNCTION `GetTotalComprasBimestre`(cod_cliente INT) RETURNS DECIMAL(10, 2) 
-BEGIN
-  DECLARE total_compras_bimestre DECIMAL(10, 2);
-SELECT(SUM(`nota_fiscal`.`cod_nota_fiscal`)) INTO total_compras_bimestre
-FROM `vd_nota_fiscal` AS `nota_fiscal`
-WHERE(`nota_fiscal`.`nop` IN (
-  '6.102',
-  '6.404',
-  'BLACKFRIDAY',
-  'VENDA',
-  'VENDA_S_ESTOQUE',
-  'WORKSHOP',
-  'VENDA DE MERCADORIA P/ NÃO CONTRIBUINTE',
-  'VENDA MERCADORIA DENTRO DO ESTADO'
-)
-AND (`nota_fiscal`.`situacao` > 79)
-AND (`nota_fiscal`.`situacao` < 86)
-AND (TIMESTAMPDIFF(DAY, `nota_fiscal`.`dt_emissao`, CURRENT_DATE()) <= 60)
-AND (`nota_fiscal`.`cod_cliente` = cod_cliente));
-
-RETURN total_compras_bimestre;
-END //
-
-DELIMITER ;
-
-DROP FUNCTION IF EXISTS `GetTotalComprasTrimestre`;
-
-DELIMITER //
-
-CREATE FUNCTION `GetTotalComprasTrimestre`(cod_cliente INT) RETURNS DECIMAL(10, 2)
-BEGIN
-  DECLARE total_compras_trimestre DECIMAL(10, 2);
-
-SELECT(SUM(`nota_fiscal`.`cod_nota_fiscal`)) INTO total_compras_trimestre
-FROM `vd_nota_fiscal` AS `nota_fiscal`
-WHERE(`nota_fiscal`.`nop` IN (
-  '6.102',
-  '6.404',
-  'BLACKFRIDAY',
-  'VENDA',
-  'VENDA_S_ESTOQUE',
-  'WORKSHOP',
-  'VENDA DE MERCADORIA P/ NÃO CONTRIBUINTE',
-  'VENDA MERCADORIA DENTRO DO ESTADO'
-)
-AND (`nota_fiscal`.`situacao` > 79)
-AND (`nota_fiscal`.`situacao` < 86)
-AND (TIMESTAMPDIFF(DAY, `nota_fiscal`.`dt_emissao`, CURRENT_DATE()) <= 90)
-AND (`nota_fiscal`.`cod_cliente` = cod_cliente));
-
-RETURN total_compras_trimestre;
-END //
-
-DELIMITER ;
-
-DROP FUNCTION IF EXISTS `GetTotalComprasSemestre`;
-
-DELIMITER //
-
-CREATE FUNCTION `GetTotalComprasSemestre`(cod_cliente INT) RETURNS DECIMAL(10, 2) 
-BEGIN DECLARE total_compras_semestre DECIMAL(10, 2);
-SELECT(SUM(`nota_fiscal`.`cod_nota_fiscal`)) INTO total_compras_semestre
-FROM `vd_nota_fiscal` AS `nota_fiscal`
-WHERE(`nota_fiscal`.`nop` IN (
-  '6.102',
-  '6.404',
-  'BLACKFRIDAY',
-  'VENDA',
-  'VENDA_S_ESTOQUE',
-  'WORKSHOP',
-  'VENDA DE MERCADORIA P/ NÃO CONTRIBUINTE',
-  'VENDA MERCADORIA DENTRO DO ESTADO'
-)
-AND (`nota_fiscal`.`situacao` > 79)
-AND (`nota_fiscal`.`situacao` < 86)
-AND (TIMESTAMPDIFF(DAY, `nota_fiscal`.`dt_emissao`, CURRENT_DATE()) <= 180)
-AND (`nota_fiscal`.`cod_cliente` = cod_cliente));
-
-RETURN total_compras_semestre;
-END //
-
 DELIMITER ;
