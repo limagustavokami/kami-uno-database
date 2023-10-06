@@ -2,8 +2,8 @@ USE db_uc_kami;
 
 CREATE OR REPLACE ALGORITHM = UNDEFINED VIEW vw_sales_lines AS
   SELECT
-    IFNULL(CAST(YEAR(pedido.dt_implant) AS INT), '0') AS ano,
-    IFNULL(CAST(MONTH(pedido.dt_implant) AS INT), '0') AS mes,
+    IFNULL(CAST(YEAR(pedido.dt_implant) AS UNSIGNED), 0) AS ano,
+    IFNULL(CAST(MONTH(pedido.dt_implant) AS UNSIGNED), 0) AS mes,
     IFNULL(CAST(pedido.cod_empresa AS CHAR charset utf8mb4), '0') AS empresa_pedido,
     IFNULL(CAST(nota_fiscal_2.cod_empresa AS CHAR charset utf8mb4), '0') AS empresa_nota_fiscal,
     IFNULL(CAST(pedido.cod_cliente AS CHAR charset utf8mb4), '0') AS cod_cliente,

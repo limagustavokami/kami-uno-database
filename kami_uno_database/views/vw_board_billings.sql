@@ -100,7 +100,8 @@ LEFT JOIN cd_produto_empresa AS produto_empresa
 LEFT JOIN cd_produto AS produto
   ON produto.cod_produto = pedido_item.cod_produto
 LEFT JOIN cd_marca AS marca
-  ON LEFT JOIN cd_cliente_endereco AS cliente_endereco
+  ON marca.cod_marca = produto.cod_marca
+LEFT JOIN cd_cliente_endereco AS cliente_endereco
   ON cliente_endereco.cod_cliente = pedido.cod_cliente
 LEFT JOIN cd_empresa AS empresa_pedido
   ON empresa_pedido.cod_empresa = pedido.cod_empresa

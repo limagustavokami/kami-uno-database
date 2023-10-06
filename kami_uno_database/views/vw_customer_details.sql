@@ -15,6 +15,7 @@ SELECT DISTINCTROW
   IFNULL(CAST(GetDiasAtraso(cliente.cod_cliente) AS CHAR charset utf8mb4), '0') AS dias_atraso,
   IFNULL(CAST(GetValorDevido(cliente.cod_cliente) AS DECIMAL(10, 2)), 0.0) AS valor_devido,
   IFNULL(CAST(DATE_FORMAT(GetDtPrimeiraCompra(cliente.cod_cliente), '%Y-%m-%d %H:%i:%s') AS CHAR charset utf8mb4), 'null') AS dt_primeira_compra,
+  IFNULL(CAST(DATE_FORMAT (GetDtPenultimaCompra (cliente.cod_cliente), '%Y-%m-%d %H:%i:%s') AS CHAR charset utf8mb4), 'null') AS dt_penultima_compra,
   IFNULL(CAST(DATE_FORMAT (GetDtUltimaCompra (cliente.cod_cliente), '%Y-%m-%d %H:%i:%s') AS CHAR charset utf8mb4), 'null') AS dt_ultima_compra,
   IFNULL(CAST(GetStatusCliente (cliente.cod_cliente) AS CHAR charset utf8mb4), 'null') AS 'STATUS',
   IFNULL(CAST(YEAR (GetDtUltimaCompra (cliente.cod_cliente)) AS CHAR charset utf8mb4), '0') AS ultimo_ano_ativo,
