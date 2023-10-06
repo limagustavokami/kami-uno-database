@@ -176,7 +176,7 @@ BEGIN
       WHEN (qtd_total_compras = 1 AND dias_desde_ultima_compra <= 30)
       THEN 'NOVO'
       
-      WHEN (qtd_total_compras > 1 AND dias_desde_ultima_compra <= 30)
+      WHEN (qtd_total_compras > 1 AND dias_desde_ultima_compra <= 30 and diferenca_dias_ultimas_2_compras <= 60)
       THEN 'ATIVO'
       
       WHEN (dias_desde_ultima_compra > 30 AND dias_desde_ultima_compra <= 60)      
